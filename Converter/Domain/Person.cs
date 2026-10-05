@@ -6,16 +6,16 @@ namespace Converter.Domain
 {
     internal class Person
     {
-        public string? FirstName { get; init; }
-        public string? LastName { get; init; }
-        public int? BirthYear { get; init; }
-        public Address? Address { get; init; }
-        public Phone? Phone { get; init; }
-        public Person? RelatedTo { get; init; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public int? BirthYear { get; set; }
+        public Address? Address { get; set; }
+        public Phone? Phone { get; set; }
+        public Person? RelatedTo { get; set; }
 
         public string FullName() => $"{FirstName} {LastName}";
 
-        public override string ToString() 
-            => $"Person: {FullName()}, BirthYear: {BirthYear}, Address: {Address}, Mobile: {Phone.Mobile}, RelatedTo: {RelatedTo?.FullName()}";
+        public override string ToString()
+            => $"Person: {FullName()}, BirthYear: {BirthYear}, Address: {Address}, Landline: {Phone?.Landline}, Mobile: {Phone?.Mobile}, RelatedTo: {RelatedTo?.FullName()}";
     }
 }
