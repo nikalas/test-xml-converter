@@ -3,7 +3,11 @@ namespace Converter.Formats.Custom
 	internal class CustomImporter : IImporter
 	{
 		private readonly List<Domain.Person> _people = [];
+
 		private const string DELIMITER = "|";
+
+		private Domain.Person? _currentParent;
+
 		public List<Domain.Person> Import(TextReader reader)
 		{
 			while (reader.ReadLine() is string line)
@@ -20,12 +24,13 @@ namespace Converter.Formats.Custom
 				{
 					case 'P':
 						// Parse a person entry
-						_people.Add(new Domain.Person()
+						_people.Add(new Domain.Person
 						{
 							FirstName = fields.ElementAtOrDefault(1),
 							LastName = fields.ElementAtOrDefault(2),
-						});
-						// Console.WriteLine($"Added person: {_people.Last().FullName()}");
+						}
+						);
+						_currentParent = _people.Last(); // Make this person parent of eventual children
 						break;
 
 					case 'A':
@@ -49,12 +54,13 @@ namespace Converter.Formats.Custom
 
 					case 'F':
 						// Parse a family entry
-						var family = new Domain.Person()
+						_people.Add(new Domain.Person
 						{
 							FirstName = fields.ElementAtOrDefault(1),
 							BirthYear = int.TryParse(fields.ElementAtOrDefault(2), out var birthYear) ? birthYear : null,
-						};
-						_people.Last().RelatedTo = family;
+							RelatedTo = _currentParent
+						}
+						);
 						break;
 
 					default:
