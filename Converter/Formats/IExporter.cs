@@ -2,6 +2,6 @@ namespace Converter.Formats
 {
 	internal interface IExporter
 	{
-		void Export();
+		public string Export(List<Domain.Person> people);
 	}
 }

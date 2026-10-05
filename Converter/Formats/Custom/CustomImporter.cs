@@ -67,10 +67,6 @@ namespace Converter.Formats.Custom
 						Console.WriteLine($"Unknown entry type: {line}");
 						break;
 				}
-
-				// Placeholder implementation to satisfy the interface.
-				// Replace with real parsing logic when you have the file format.
-				Console.WriteLine($"Read line: {line}");
 			}
 			return _people;
 		}
