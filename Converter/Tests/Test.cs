@@ -4,6 +4,31 @@ namespace Converter.Tests
 {
 	class ModelTests
 	{
+		public static void ConfirmStructure()
+		{
+			// read default input file
+			string path = "./../input.txt";
+			if (!File.Exists(path))
+			{
+				Console.WriteLine($"File not found: {path}");
+				return;
+			}
+
+			using var source = new Input.FileInputSource(path).Open();
+			var importer = new Formats.Custom.CustomImporter();
+			var people = importer.Import(source);
+
+			string json = System.Text.Json.JsonSerializer.Serialize(
+				people,
+				new System.Text.Json.JsonSerializerOptions
+				{
+					WriteIndented = true
+				}
+				);
+			Console.WriteLine("-------------- people ----------------");
+			Console.WriteLine(json);
+		}
+
 		public static void ConfirmModel()
 		{
 			// Create some 
