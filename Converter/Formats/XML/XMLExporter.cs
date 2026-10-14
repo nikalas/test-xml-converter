@@ -4,70 +4,61 @@ namespace Converter.Formats.XML
 {
 	internal class XMLExporter : IExporter
 	{
+		// Create element unless falsy value, in which case return null
+		private static XElement? Element(string name, string? value) =>
+			string.IsNullOrEmpty(value) ? null : new XElement(name, value);
+
+		// Create element unless falsy value, in which case return null
+		private static XElement? Element(string name, int? value) =>
+			value.HasValue ? new XElement(name, value.Value) : null;
+
+		// Create container element unless all child elements are null, in which case return null
+		private static XElement? Container(string name, params XElement?[] elements)
+		{
+			var validElements = elements.OfType<XElement>().ToArray();
+			return validElements.Length > 0
+				? new XElement(name, validElements)
+				: null;
+		}
+
+		// Export a list of people to XML format
 		public string Export(List<Domain.Person> people)
 		{
 			var root = new XElement("people",
 				from person in people
 				where person.RelatedTo == null
-				let children = people
-					.Where(child => child.RelatedTo == person)
-					.ToList()
 				select new XElement("person",
-					person.FirstName != null
-						? new XElement("firstname", person.FirstName)
-						: null,
+					Element("firstname", person.FirstName),
+					Element("lastname", person.LastName),
 
-					person.LastName != null
-						? new XElement("lastname", person.LastName)
-						: null,
+					Container("address",
+						Element("street", person.Address?.Street),
+						Element("city", person.Address?.City),
+						Element("zip", person.Address?.Zip)
+					),
 
-					person.Address != null &&
-					(person.Address.Street != null ||
-					 person.Address.City != null ||
-					 person.Address.Zip != null)
-						? new XElement("address",
-							person.Address.Street != null
-								? new XElement("street", person.Address.Street)
-								: null,
+					Container("phone",
+						Element("mobile", person.Phone?.Mobile),
+						Element("landline", person.Phone?.Landline)
+					),
 
-							person.Address.City != null
-								? new XElement("city", person.Address.City)
-								: null,
+					from child in people
+					where child.RelatedTo == person
+					select Container("family",
+						Element("name", child.FirstName),
+						Element("born", child.BirthYear),
 
-							person.Address.Zip != null
-								? new XElement("zip", person.Address.Zip)
-								: null
+						Container("address",
+							Element("street", child.Address?.Street),
+							Element("city", child.Address?.City),
+							Element("zip", child.Address?.Zip)
+						),
+
+						Container("phone",
+							Element("mobile", child.Phone?.Mobile),
+							Element("landline", child.Phone?.Landline)
 						)
-						: null,
-
-					person.Phone != null &&
-					(person.Phone.Landline != null ||
-					 person.Phone.Mobile != null)
-						? new XElement("phone",
-							person.Phone.Landline != null
-								? new XElement("landline", person.Phone.Landline)
-								: null,
-
-							person.Phone.Mobile != null
-								? new XElement("mobile", person.Phone.Mobile)
-								: null
-						)
-						: null,
-
-					children.Count > 0
-						? new XElement("family",
-							from child in children
-							select new XElement("child",
-								child.FirstName != null
-									? new XElement("name", child.FirstName)
-									: null,
-
-								child.BirthYear.HasValue
-									? new XElement("born", child.BirthYear.Value)
-									: null
-							)
-						)
-						: null
+					)
 				)
 			);
 
@@ -75,7 +66,6 @@ namespace Converter.Formats.XML
 			root.Save(tempFilePath);
 
 			Console.WriteLine($"XML file saved to: {tempFilePath}");
-
 			return root.ToString();
 		}
 	}
