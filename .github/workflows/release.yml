@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.rid }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            archive: zip
+
+          - os: macos-latest
+            rid: osx-arm64
+            archive: tar.gz
+
+          - os: macos-15-intel
+            rid: osx-x64
+            archive: tar.gz
+
+          - os: ubuntu-latest
+            rid: linux-x64
+            archive: tar.gz
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish
+        run: dotnet publish Converter/Converter.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o publish
+
+      - name: Package (Windows)
+        if: matrix.archive == 'zip'
+        shell: pwsh
+        run: Compress-Archive -Path publish/* -DestinationPath converter-${{ matrix.rid }}.zip
+
+      - name: Package (macOS/Linux)
+        if: matrix.archive == 'tar.gz'
+        run: tar -czf converter-${{ matrix.rid }}.tar.gz -C publish .
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.ref_name }}" "converter-${{ matrix.rid }}.${{ matrix.archive }}"
