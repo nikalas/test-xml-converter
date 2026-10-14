@@ -27,12 +27,13 @@ namespace Converter
                 return;
             }
 
-            string inputPath = Path.GetFullPath(path);
-            string outputPath = Path.GetFullPath("../output.xml");
-            Console.WriteLine($"Absolute path: {inputPath}");
+            // string inputPath = Path.GetFullPath(path);
+            // string outputPath = Path.GetFullPath("../output.xml");
+            // Console.WriteLine($"Absolute path: {inputPath}");
 
             // create components for the conversion pipeline
-            IInputSource source = new Input.FileInputSource(inputPath);
+            // IInputSource source = new Input.FileInputSource(inputPath);
+            IInputSource source = new Input.StdinInputSource();
             IImporter importer = new Formats.Custom.CustomImporter();
             IExporter exporter = new Formats.XML.XMLExporter();
             IOutputSink sink = new Output.StdoutOutputSink();
