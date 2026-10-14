@@ -62,10 +62,6 @@ namespace Converter.Formats.XML
 				)
 			);
 
-			var tempFilePath = Path.GetTempFileName();
-			root.Save(tempFilePath);
-
-			Console.WriteLine($"XML file saved to: {tempFilePath}");
 			return root.ToString();
 		}
 	}
