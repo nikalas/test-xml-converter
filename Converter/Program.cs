@@ -35,7 +35,7 @@ namespace Converter
             IInputSource source = new Input.FileInputSource(inputPath);
             IImporter importer = new Formats.Custom.CustomImporter();
             IExporter exporter = new Formats.XML.XMLExporter();
-            IOutputSink sink = new Output.FileOutputSink(outputPath);
+            IOutputSink sink = new Output.StdoutOutputSink();
 
             // read input, convert to domain model, and export to XML
             using var input = source.Open();
@@ -44,8 +44,8 @@ namespace Converter
 
             // write the output
             sink.Write(output);
-            string destination = sink is Output.FileOutputSink fileSink ? fileSink.FilePath : "stdout";
-            Console.WriteLine($"Output path: {destination}");
+            // string destination = sink is Output.FileOutputSink fileSink ? fileSink.FilePath : "stdout";
+            // Console.WriteLine($"Output path: {destination}");
         }
 
     }
