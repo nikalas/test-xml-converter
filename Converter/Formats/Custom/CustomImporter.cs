@@ -26,8 +26,8 @@ namespace Converter.Formats.Custom
 						// Parse a person entry
 						_people.Add(new Domain.Person
 						{
-							FirstName = fields.ElementAtOrDefault(1),
-							LastName = fields.ElementAtOrDefault(2),
+							FirstName = GetField(fields, 1),
+							LastName = GetField(fields, 2),
 						}
 						);
 						_currentParent = _people.Last(); // Make this person parent of eventual children
@@ -37,9 +37,9 @@ namespace Converter.Formats.Custom
 						// Parse an address entry
 						_people.Last().Address = new Domain.Address
 						{
-							Street = fields.ElementAtOrDefault(1),
-							City = fields.ElementAtOrDefault(2),
-							Zip = fields.ElementAtOrDefault(3)
+							Street = GetField(fields, 1),
+							City = GetField(fields, 2),
+							Zip = GetField(fields, 3)
 						};
 						break;
 
@@ -47,8 +47,8 @@ namespace Converter.Formats.Custom
 						// Parse a phone entry
 						_people.Last().Phone = new Domain.Phone
 						{
-							Landline = fields.ElementAtOrDefault(1),
-							Mobile = fields.ElementAtOrDefault(2)
+							Landline = GetField(fields, 1),
+							Mobile = GetField(fields, 2)
 						};
 						break;
 
@@ -56,19 +56,42 @@ namespace Converter.Formats.Custom
 						// Parse a family entry
 						_people.Add(new Domain.Person
 						{
-							FirstName = fields.ElementAtOrDefault(1),
-							BirthYear = int.TryParse(fields.ElementAtOrDefault(2), out var birthYear) ? birthYear : null,
+							FirstName = GetField(fields, 1),
+							BirthYear = int.TryParse(GetField(fields, 2), out var birthYear) ? birthYear : null,
 							RelatedTo = _currentParent
 						}
 						);
 						break;
 
 					default:
+						// should probably log
 						Console.WriteLine($"Unknown entry type: {line}");
 						break;
 				}
+				Console.WriteLine("---------");
 			}
+
 			return _people;
+		}
+
+		private static string? NormalizeField(string? field)
+		{
+			if (string.IsNullOrWhiteSpace(field))
+			{
+				return null;
+			}
+			return field.Trim();
+		}
+
+		private static string? GetField(string[] fields, int index)
+		{
+			if (index < 0 || index >= fields.Length)
+			{
+				return null;
+			}
+			return NormalizeField(
+				fields.ElementAtOrDefault(index) ?? null
+			);
 		}
 	}
 
