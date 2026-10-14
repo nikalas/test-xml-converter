@@ -68,7 +68,6 @@ namespace Converter.Formats.Custom
 						Console.WriteLine($"Unknown entry type: {line}");
 						break;
 				}
-				Console.WriteLine("---------");
 			}
 
 			return _people;

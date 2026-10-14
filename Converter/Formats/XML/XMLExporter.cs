@@ -1,52 +1,79 @@
 using System.Xml.Linq;
+
 namespace Converter.Formats.XML
 {
 	internal class XMLExporter : IExporter
 	{
 		public string Export(List<Domain.Person> people)
 		{
-
-			// // convert the list of people to XML format, use System.Xml.Linq.XElement to create the XML elements
-			// // do not include empty elements, e.g. if a person has no mobile, do not include the mobile element
-			// foreach (var person in people)
-			// {
-			//  Console.WriteLine($"FirstName: [{person.FirstName}], LastName: [{person.LastName}]");
-			//  Console.WriteLine($"Zip: [{person.Address?.Zip}]");
-			//  Console.WriteLine($"Landline: [{person.Phone?.Landline}]");
-			//  Console.WriteLine($"Mobile: [{person.Phone?.Mobile}]");
-			// }
-
 			var root = new XElement("people",
 				from person in people
-					// no relation = top-level person/parent
 				where person.RelatedTo == null
+				let children = people
+					.Where(child => child.RelatedTo == person)
+					.ToList()
 				select new XElement("person",
-					new XElement("firstname", person.FirstName),
-					new XElement("lastname", person.LastName),
-					new XElement("address",
-						new XElement("street", person.Address?.Street),
-						new XElement("city", person.Address?.City),
-						new XElement("zip", person.Address?.Zip)
-					),
-					new XElement("phone",
-						new XElement("landline", person.Phone?.Landline),
-						new XElement("mobile", person.Phone?.Mobile)
-					),
-					new XElement("family",
-						// grab all children of the current person
-						from child in people
-						where child.RelatedTo == person
-						select new XElement("child",
-							new XElement("name", child.FirstName),
-							new XElement("born", child.BirthYear)
+					person.FirstName != null
+						? new XElement("firstname", person.FirstName)
+						: null,
+
+					person.LastName != null
+						? new XElement("lastname", person.LastName)
+						: null,
+
+					person.Address != null &&
+					(person.Address.Street != null ||
+					 person.Address.City != null ||
+					 person.Address.Zip != null)
+						? new XElement("address",
+							person.Address.Street != null
+								? new XElement("street", person.Address.Street)
+								: null,
+
+							person.Address.City != null
+								? new XElement("city", person.Address.City)
+								: null,
+
+							person.Address.Zip != null
+								? new XElement("zip", person.Address.Zip)
+								: null
 						)
-					)
+						: null,
+
+					person.Phone != null &&
+					(person.Phone.Landline != null ||
+					 person.Phone.Mobile != null)
+						? new XElement("phone",
+							person.Phone.Landline != null
+								? new XElement("landline", person.Phone.Landline)
+								: null,
+
+							person.Phone.Mobile != null
+								? new XElement("mobile", person.Phone.Mobile)
+								: null
+						)
+						: null,
+
+					children.Count > 0
+						? new XElement("family",
+							from child in children
+							select new XElement("child",
+								child.FirstName != null
+									? new XElement("name", child.FirstName)
+									: null,
+
+								child.BirthYear.HasValue
+									? new XElement("born", child.BirthYear.Value)
+									: null
+							)
+						)
+						: null
 				)
 			);
 
-			// write temp file to disk
-			var tempFilePath = System.IO.Path.GetTempFileName();
+			var tempFilePath = Path.GetTempFileName();
 			root.Save(tempFilePath);
+
 			Console.WriteLine($"XML file saved to: {tempFilePath}");
 
 			return root.ToString();
