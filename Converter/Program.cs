@@ -1,7 +1,7 @@
 ﻿using Converter.Domain;
 using Converter.Formats;
 using Converter.Input;
-// using Converter.Output;
+using Converter.Output;
 
 namespace Converter
 {
@@ -27,27 +27,24 @@ namespace Converter
                 return;
             }
 
-            path = Path.GetFullPath(path);
-            Console.WriteLine($"Absolute path: {path}");
+            string inputPath = Path.GetFullPath(path);
+            string outputPath = Path.GetFullPath("output.xml");
+            Console.WriteLine($"Absolute path: {inputPath}");
 
             // create components for the conversion pipeline
-            IInputSource source = new Input.FileInputSource(path);
+            IInputSource source = new Input.FileInputSource(inputPath);
             IImporter importer = new Formats.Custom.CustomImporter();
             IExporter exporter = new Formats.XML.XMLExporter();
-            // IWriter writer = new Output.FileSink();
+            IOutputSink writer = new Output.FileOutputSink("output.xml");
 
             // read input, convert to domain model, and export to XML
             using var input = source.Open();
             List<Domain.Person> people = importer.Import(input);
             string output = exporter.Export(people);
-            // string output = writer.Write(result);
 
-            // just write output to file for now
-            File.WriteAllText("output.xml", output);
-            string outputPath = Path.GetFullPath("output.xml");
-            Console.WriteLine($"XML file saved to: {outputPath}");
-
-
+            // write the output
+            writer.Write(output);
+            Console.WriteLine($"Output path: {outputPath}");
         }
 
     }
