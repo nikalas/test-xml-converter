@@ -28,14 +28,14 @@ namespace Converter
             }
 
             string inputPath = Path.GetFullPath(path);
-            string outputPath = Path.GetFullPath("output.xml");
+            string outputPath = Path.GetFullPath("../output.xml");
             Console.WriteLine($"Absolute path: {inputPath}");
 
             // create components for the conversion pipeline
             IInputSource source = new Input.FileInputSource(inputPath);
             IImporter importer = new Formats.Custom.CustomImporter();
             IExporter exporter = new Formats.XML.XMLExporter();
-            IOutputSink writer = new Output.FileOutputSink("output.xml");
+            IOutputSink sink = new Output.FileOutputSink(outputPath);
 
             // read input, convert to domain model, and export to XML
             using var input = source.Open();
@@ -43,8 +43,9 @@ namespace Converter
             string output = exporter.Export(people);
 
             // write the output
-            writer.Write(output);
-            Console.WriteLine($"Output path: {outputPath}");
+            sink.Write(output);
+            string destination = sink is Output.FileOutputSink fileSink ? fileSink.FilePath : "stdout";
+            Console.WriteLine($"Output path: {destination}");
         }
 
     }
