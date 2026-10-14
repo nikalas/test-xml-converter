@@ -1,4 +1,5 @@
 ﻿using Converter.Domain;
+using Converter.Formats;
 
 namespace Converter
 {
@@ -9,6 +10,9 @@ namespace Converter
         {
 
             // Tests.ModelTests.ConfirmModel();
+            // return;
+
+            // Tests.ModelTests.ConfirmStructure();
             // return;
 
             string path = args.Length > 0 ? args[0] : DEFAULT_PATH;
@@ -26,8 +30,11 @@ namespace Converter
 
 
             using var source = new Input.FileInputSource(path).Open();
-            var importer = new Formats.Custom.CustomImporter();
-            var people = importer.Import(source);
+            IImporter importer = new Formats.Custom.CustomImporter();
+            List<Domain.Person> people = importer.Import(source);
+            IExporter exporter = new Formats.XML.XMLExporter();
+            var xml = exporter.Export(people);
+            // new Output.FileOutputDestination("output.xml").Write(xml);
 
         }
 
